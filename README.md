@@ -23,15 +23,15 @@ Also MySQL queries had to be done with PDO, and safety had to be taken care of s
   * :bangbang: Add Stickers (Currently on work)
   * :x: Take images with webcam
 * Comment system
-  * :x: Add comment to photo
+  * :heavy_check_mark: Add comment to photo
   * :x: Send email notification to pictures uploader
-  * :x: Display comments
+  * :heavy_check_mark: Display comments
   * :x: Remove comments from own pictures
 * Likes
   * :x: Like images
-  * :x: Display likes
+  * :heavy_check_mark: Display likes
 * User Settings
-  * :x: Change email/username/password
+  * :heavy_check_mark: Change email/username/password
   * :x: Change profile picture and description
   * :x: Disable notifications
   * :x: Remove own images
