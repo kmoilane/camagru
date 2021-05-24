@@ -14,7 +14,7 @@ Also MySQL queries had to be done with PDO, and safety had to be taken care of s
   * :heavy_check_mark: Register with email verification
   * :heavy_check_mark: Login
   * :heavy_check_mark: Logout
-  * :x: Recover forgotten password
+  * :heavy_check_mark: Recover forgotten password
 * Post images
   * :heavy_check_mark: Upload new gif, png, jpg, jpeg or bmp
   * :heavy_check_mark: Preview image before uploading
