@@ -240,10 +240,28 @@ textarea:focus::placeholder {
 
 
 .section-gallery {
-	margin-top: 80px;
 	width: 100%;
-	min-height: 100vh;
+	padding: 20px 0;
 	position: absolute;
+}
+
+.gallery-pagination {
+	margin-top: 80px;
+	width: 20%;
+	margin: 0 auto;
+	height: 30px;
+	font-size: 2rem;
+	display: flex;
+	flex-direction: row;
+}
+
+.gallery-pagination ul {
+	list-style: none;
+	color: white;
+}
+
+.gallery-item ul li button {
+	display: inline-block;
 }
 
 .display-none {
@@ -275,8 +293,8 @@ textarea:focus::placeholder {
 	width: 50%;
 	min-width: 300px;
 	margin: 0 auto;
-	padding-top: 20px;
-	min-height: 100vh;
+	padding-top: 80px;
+	height: 100%;
 	display: flex;
 	flex-wrap: wrap;
 	flex-direction: column;
@@ -289,9 +307,6 @@ textarea:focus::placeholder {
 	min-width: 300px;
 	margin: 10px auto;
 	text-align: center;
-	padding-bottom: 10px;
-	border-bottom: 1px solid black;
-	background-color: rgb(41, 41, 41);
 }
 
 .gallery-item h3 {
@@ -352,6 +367,12 @@ textarea:focus::placeholder {
 	transition: 0.2s ease-in-out;
 }
 
+.uploader-profile h3 {
+	font-size: 1.5rem;
+	font-weight: 400;
+	vertical-align: middle;
+}
+
 .image-title {
 	display: none;
 	position: absolute;
@@ -364,7 +385,7 @@ textarea:focus::placeholder {
 }
 
 .image-title h3{
-	font-size: 25px;
+	font-size: 1.5rem;
 	vertical-align: middle;
 	text-align: center;
 }
@@ -389,11 +410,16 @@ textarea:focus::placeholder {
 }
 
 .image-interactions {
-	width: 25%;
+	width: 100%;
+	height: 52px;
 	display: flex;
 	flex-direction: row;
 	padding-top: 0;
 	margin-top: 0;
+	border-right: 1px solid black;
+	border-left: 1px solid black;
+	background-color: #1f1f1f81;
+	justify-content: space-between;
 }
 
 .likes {
@@ -402,7 +428,13 @@ textarea:focus::placeholder {
 	margin: 0 10px 0 5px;
 }
 
-.likes img, .open-comments img {
+.delete-img {
+	display: flex;
+	align-items: center;
+	margin: 0 10px 0 5px;
+}
+
+.likes input, .delete-img input {
 	width: 48px;
 	height: 48px;
 	background-color: transparent;
@@ -411,8 +443,16 @@ textarea:focus::placeholder {
 	padding: 0;
 }
 
-.likes img:hover, .open-comments img:hover {
+.likes input:hover, .delete-img input:hover {
 	border: 1px solid orange;
+}
+
+.liked {
+	background-image: url("https://img.icons8.com/emoji/48/000000/smiling-face-with-heart-eyes.png");
+}
+
+.unliked {
+	background-image: url("https://img.icons8.com/emoji/48/000000/slightly-smiling-face.png");
 }
 
 .likes span {
@@ -420,11 +460,6 @@ textarea:focus::placeholder {
 	color: white;
 	font-size: 1.5em;
 	padding: auto;
-}
-
-.open-comments {
-	display: inline-block;
-	float: right;
 }
 
 .comments {
@@ -518,7 +553,7 @@ textarea:focus::placeholder {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	margin-top: 5vh;
+	padding-top: 5vh;
 	color: whitesmoke;
 }
 

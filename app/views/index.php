@@ -1,4 +1,12 @@
 <?php
+	if (!isLoggedIn() && (isset($_SESSION["email"]) || isset($_SESSION["passRecovery"])))
+	{
+		unset($_SESSION["email"]);
+		unset($_SESSION["passRecovery"]);
+	}
+?>
+
+<?php
 	require APPROOT . "/views/includes/head.php"
 ?>
 <script type="text/javascript" src="<?php echo URLROOT;?>/public/javascript/gallery.js"></script>
@@ -20,13 +28,17 @@
 
 
 	<div class="section-gallery">
+		<div class="pagination">
+			<div class=""></div>
+		</div>
 		<div class="gallery">
 			<?php $i = 0;$count = count($data);
 			while ($i < $count)
 			{
 				$uploaderUName = $data[$i]->username;
 				$uploaderPic = IMGROOT . "/profile/" . $data[$i]->profile_pic;
-				$uploaderID = URLROOT. "/profiles/post?id=" . $data[$i]->image_id;
+				$uploaderURL = URLROOT. "/profiles/profile?id=" . $data[$i]->user_id;
+				$postURL = URLROOT. "/profiles/post?id=" . $data[$i]->image_id;
 				$imgTitle = $data[$i]->image_title;
 				$imgURL = IMGROOT . "/gallery/" . $data[$i]->file_name;
 				$imgId = $data[$i]->image_id;
@@ -47,7 +59,7 @@
 
 				$i++;?>
 			<div class="gallery-item">
-				<a href="<?php echo $uploaderID; ?>">
+				<a href="<?php echo $postURL; ?>">
 					<div class="uploader-profile">
 						<div class="profile-thumbnail">
 							<img src="<?php echo $uploaderPic;?>" alt="profile picture">
@@ -64,24 +76,6 @@
 					</div>
 					<img class="full-img" src="<?php echo $imgURL?>" alt="anonymous profile picture">
 				</a>
-				<div class="image-interactions">
-					<div class="likes">
-						<?php
-						if ($ILike)
-							echo '<img alt="likes" onclick="like.call(this)" title="Remove Like" src="https://img.icons8.com/emoji/48/000000/smiling-face-with-heart-eyes.png"/>';
-						else
-							echo '<img alt="likes" onclick="like.call(this)" title="Like This Image" src="https://img.icons8.com/emoji/48/000000/slightly-smiling-face.png"/>';
-						?>
-						<span><?php echo $likeCount; ?></span>
-					</div>
-					<div class="open-comments">
-						<img alt="Comment" title="Read or Write Comments" src="https://img.icons8.com/emoji/48/000000/speech-balloon.png"/>
-					</div>
-				</div>
-				<div class="comments">
-
-				</div>
-				<!--</a>-->
 			</div>
 			<?php } ?>
 		</div>

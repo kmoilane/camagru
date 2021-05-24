@@ -26,27 +26,50 @@
 		</div>
 	</div>
 	<div class="section-gallery">
+	<?php
+			if (isset($_SESSION["message"]))
+				{
+					echo '<p style="color: green; text-align:center;">' . htmlentities($_SESSION["message"]) . '</p>';
+					unset($_SESSION["message"]);
+				}
+		?>
 		<div class="gallery">
 			<?php $i = 0;$count = count($data);
+
 			while ($i < $count)
 			{
-				$uploaderUName = $data[$i]->username;
-				$uploaderPic = IMGROOT . "/profile/" . $data[$i]->profile_pic;
-				$uploaderID = URLROOT. "/profiles/profile?id=" . $data[$i]->user_id;
-				$imgTitle = $data[$i]->image_title;
-				$imgURL = IMGROOT . "/gallery/" . $data[$i]->file_name;
-
-				$i++;?>
-			<div class="gallery-item">
-				<div class="image-title">
+				if ($data[$i]->user_id == $_GET["id"])
+				{
+					$uploaderUName = $data[$i]->username;
+					$uploaderPic = IMGROOT . "/profile/" . $data[$i]->profile_pic;
+					$uploaderURL = URLROOT. "/profiles/profile?id=" . $data[$i]->user_id;
+					$postURL = URLROOT. "/profiles/post?id=" . $data[$i]->image_id;
+					$imgTitle = $data[$i]->image_title;
+					$imgURL = IMGROOT . "/gallery/" . $data[$i]->file_name;
+					?>
+				<div class="gallery-item">
+					<a href="<?php echo $postURL; ?>">
+						<div class="uploader-profile">
+							<div class="profile-thumbnail">
+								<img src="<?php echo $uploaderPic;?>" alt="profile picture">
+							</div>
+							<h3><?php echo $uploaderUName;?></h3>
+						</div>
+						<div class="image-title">
+							<h3>
+							<?php
+								if (isLoggedIn())
+									echo $imgTitle;
+							?>
+							</h3>
+						</div>
+						<img class="full-img" src="<?php echo $imgURL?>" alt="anonymous profile picture">
+					</a>
 				</div>
-				<div class="image-description">
-				</div>
-				<div class="image-interactions">
-				</div>
-				<img src="<?php echo $imgURL?>" alt="anonymous profile picture">
-			</div>
-			<?php } ?>
+			<?php
+				}
+				$i++;
+			}?>
 		</div>
 	</div>
 </div>

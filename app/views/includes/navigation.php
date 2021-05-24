@@ -35,7 +35,7 @@
 			</li>
 			<li>
 				<?php if (isset($_SESSION["user_id"])) : ?>
-					<a href="<?php echo URLROOT; ?>/profiles/profile">Profile</a>
+					<a href="<?php echo URLROOT . "/profiles/profile?id=".$_SESSION['user_id']; ?>">Profile</a>
 				<?php else : ?>
 					<a href="<?php echo URLROOT; ?>/users/register">Sign up</a>
 				<?php endif; ?>

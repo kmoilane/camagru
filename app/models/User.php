@@ -39,19 +39,29 @@ class User
 			$hashedPassword = $row->password;
 
 			if (password_verify($password, $hashedPassword))
+			{
+				// Remove OTP if there is one
+				$pdoField = ":" . $loginType;
+				$this->db->query("UPDATE users SET otp = :otp WHERE $loginType = $pdoField");
+
+				$this->db->bind($pdoField, $username);
+				$this->db->bind(":otp", "");
+				$this->db->execute();
+
 				return $row;
+			}
 			else
 				return false;
 		}
 	}
 
-	public function verify($email, $otp)
+	public function verify($email, $otp, $active = 0)
 	{
 		$this->db->query("SELECT * FROM users WHERE email = :email AND otp = :otp AND active = :active");
 
 		$this->db->bind(":email", $email);
 		$this->db->bind(":otp", $otp);
-		$this->db->bind(":active", '0');
+		$this->db->bind(":active", $active);
 
 		if ($this->db->rowCount() == 1)
 		{
@@ -146,6 +156,47 @@ class User
 		$this->db->query("DELETE FROM users WHERE id = :id");
 		$this->db->bind(":id", $data["user_id"]);
 		if ($this->db->execute())
+			return true;
+		return false;
+	}
+
+	public function setOtp($data)
+	{
+		if (isset($data["email"]) && isset($data["otp"]))
+		{
+			$this->db->query("UPDATE users SET otp = :otp WHERE email = :email");
+			$this->db->bind(":otp", $data["otp"]);
+			$this->db->bind(":email", $data["email"]);
+			if ($this->db->execute())
+				return true;
+		}
+		return false;
+	}
+
+	public function changePassword($data)
+	{
+		if (isset($data["password"]) && isset($_SESSION["email"]))
+		{
+			$this->db->query("UPDATE users SET password = :password, otp = :otp WHERE email = :email");
+			$this->db->bind(":password", $data["password"]);
+			$this->db->bind(":otp", "");
+			$this->db->bind(":email", $_SESSION["email"]);
+			if ($this->db->execute())
+				return true;
+			else
+				return false;
+		}
+		return false;
+	}
+
+	public function verifyRecovery($email, $otp)
+	{
+		$this->db->query("SELECT * FROM users WHERE email = :email AND otp = :otp");
+
+		$this->db->bind(":email", $email);
+		$this->db->bind(":otp", $otp);
+
+		if ($this->db->rowCount() == 1)
 			return true;
 		return false;
 	}

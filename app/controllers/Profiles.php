@@ -128,12 +128,56 @@ class Profiles extends Controller
 				{
 					if ($this->profileModel->addComment($data, $_POST["comment"]))
 					{
+						if ($data["emailNotifications"] == '1')
+						{
+							// Send notification email
+							$email = $data["email"];
+							$username = $data["username"];
+							$subject = "New Comment!";
+							$message = "Hey $username! You have new comment one one of your posts!";
+							$headers = "Content-Type: text/html; charset=UTF-8\r\n";
+							$headers .= 'From: Camagru <admin@kmoilane.me>' . "\r\n";
+
+							mail($email, $subject, $message, $headers);
+						}
 						header("location: " . URLROOT . "/profiles/post?id=".$_GET["id"]);
 						return;
 					}
 				}
-				$this->view("profiles/post", $data, $comments, $likes);
 
+				if (isset($_POST["likeBtn_x"]))
+				{
+					if ($this->profileModel->addLike($_GET["id"], $_SESSION["user_id"]))
+					{
+						header("location: " . URLROOT . "/profiles/post?id=".$_GET["id"]);
+						return;
+					}
+					else
+						$this->view("profiles/post", $data, $comments, $likes);
+				}
+
+				if (isset($_POST["unlikeBtn_x"]))
+				{
+					if ($this->profileModel->removeLike($_GET["id"], $_SESSION["user_id"]))
+					{
+						header("location: " . URLROOT . "/profiles/post?id=".$_GET["id"]);
+						return;
+					}
+					else
+						$this->view("profiles/post", $data, $comments, $likes);
+				}
+
+				if (isset($_POST["delete_x"]))
+				{
+					if ($this->profileModel->deleteImage($_GET["id"]))
+					{
+						$_SESSION["message"] = "Image removed successfully!";
+						header("location: " . URLROOT . "/profiles/profile?id=".$_SESSION["user_id"]);
+						return;
+					}
+				}
+
+				$this->view("profiles/post", $data, $comments, $likes);
 			}
 			else
 				header("location: " . URLROOT . "/");

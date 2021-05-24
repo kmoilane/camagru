@@ -19,7 +19,6 @@
 				<?php echo $data["emailError"]; ?>
 			</span>
 			<input autocomplete="off" type="text" placeholder="Email" name="email">
-
 			<button id="submit" name="recover" type="submit" value="submit">Continue</button>
 			<span class="error-feedback">
 				<?php echo $data["mailError"]; ?>

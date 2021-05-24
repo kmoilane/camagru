@@ -388,23 +388,128 @@ class Users extends Controller
 		$data = [
 			"email" => "",
 			"emailError" => "",
-			"mailError" => ""
+			"mailError" => "",
+			"otp" => ""
 		];
 
-		if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["recover"]))
+		if (isset($_POST["recover"]))
 		{
 			$data["email"] =  htmlspecialchars(stripslashes(trim($_POST["email"])));
-			if ($this->userModel->findUserFromDb("email", $data["email"]))
+			$data["emailError"] = validateEmail($data, $this);
+			if ($data["emailError"] === "Email already registered")
+				$data["emailError"] = "";
+			if ($data["emailError"] == "")
 			{
+				if ($this->userModel->findUserFromDb("email", $data["email"]))
+				{
+					$data["otp"] = generate_otp();
+
+					// Send verification email
+					$email = $data["email"];
+					$otp = $data["otp"];
+					$subject = "Camagru Verification Code";
+					$message = "Your password recovery code is:<br> $otp <br>";
+					$headers = "Content-Type: text/html; charset=UTF-8\r\n";
+					$headers .= 'From: Camagru <admin@kmoilane.me>' . "\r\n";
+					if (mail($email, $subject, $message, $headers))
+					{
+						$this->userModel->setOtp($data);
+
+						// Redirect to verification page
+						$_SESSION["email"] = $email;
+						header("location: " .URLROOT . "/users/verify_password_recovery");
+					}
+					else
+					{
+						$data["mailError"] = "Failed to send verification code!";
+					}
+				}
+				else
+					$data["emailError"] = "Unknown error";
 
 			}
 			else
 			{
-				$data["emailError"] = "Email not registered";
+				$data["emailError"] = validateEmail($data, $this);
 				$this->view("users/recover_password", $data);
 			}
+			$this->view("users/verify_password_recovery", $data);
 		}
 		$this->view("users/recover_password", $data);
+	}
+
+	public function verify_password_recovery()
+	{
+		$data = [
+			"otp" => "",
+			"email" => "",
+			"otpError" => ""
+		];
+
+		// Check POST
+		if (isset($_POST["recover"]))
+		{
+			if (isset($_POST["otp"]))
+			{
+				$data = [
+					"email" => trim($_SESSION["email"]),
+					"otp" => trim($_POST["otp"]),
+					"otpError" => ""
+				];
+				if ($this->userModel->verifyRecovery($data["email"], $data["otp"]))
+				{
+					$_SESSION["passRecovery"] = "1";
+					header("location: " . URLROOT . "/users/set_new_password");
+				}
+				else
+					$data["otpError"] = "Wrong Verification Code!";
+			}
+			else
+				$data["otpError"] = "Please enter your verification code!";
+		}
+		$this->view("users/verify_password_recovery", $data);
+	}
+
+	public function set_new_password()
+	{
+		$data = [
+			"password" => "",
+			"passwordError" => "",
+			"confirmPassword" => ""
+		];
+		// Check POST
+		if (isset($_POST["change"]))
+		{
+			// Validate new passwords if set
+			if (isset($_POST["password"]) && !empty($_POST["password"]))
+			{
+				$data["password"] = htmlspecialchars(stripslashes(trim($_POST["password"])));
+				$data["confirmPassword"] = htmlspecialchars(stripslashes(trim($_POST["confirmPassword"])));
+
+				$data["passwordError"] = validatePasswords($data);
+
+				if (empty($data["passwordError"]))
+				{
+					// Encrypt password
+					if (isset($data["password"]))
+						$data["password"] = password_hash($data["password"], PASSWORD_BCRYPT);
+
+					// Change users password
+					if ($this->userModel->changePassword($data))
+					{
+						unset($_SESSION["email"]);
+						unset($_SESSION["passRecovery"]);
+						$_SESSION["message"] = "Password has been changed!";
+						header("location: " . URLROOT . "/users/login");
+					}
+				}
+				else
+					$this->view("users/set_new_password", $data);
+			}
+			else
+				$this->view("users/set_new_password", $data);
+		}
+		$this->view("users/set_new_password", $data);
 	}
 }
 

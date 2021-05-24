@@ -29,6 +29,12 @@ class Page
 		$this->db->query("SELECT * FROM likes");
 		return $this->db->resultSet();
 	}
+
+	public function getImageCount()
+	{
+		$this->db->query("SELECT * FROM images");
+		return $this->db->rowCount();
+	}
 }
 
 ?>

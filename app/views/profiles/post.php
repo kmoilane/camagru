@@ -14,11 +14,6 @@
 
 <div class="section-gallery">
 		<div class="gallery">
-		<?php/*
-		var_dump($data);
-		var_dump($likes);
-		var_dump($comments);*/
-		?>
 			<div class="gallery-item">
 					<div class="uploader-profile">
 						<div class="profile-thumbnail">
@@ -33,6 +28,7 @@
 					<img class="full-img" src="<?php echo IMGROOT . "/gallery/" . $data["file_name"]?>" alt="anonymous profile picture">
 				<div class="image-interactions">
 					<div class="likes">
+						<form method="POST">
 						<?php
 						$ILike = 0;
 						$i = 0;
@@ -44,15 +40,22 @@
 							$i++;
 						}
 						if ($ILike)
-							echo '<img alt="likes" onclick="like.call(this)" title="Remove Like" src="https://img.icons8.com/emoji/48/000000/smiling-face-with-heart-eyes.png"/>';
+							echo '<input type="image" alt="Unlike" name="unlikeBtn" title="Remove Like" src="https://img.icons8.com/emoji/48/000000/smiling-face-with-heart-eyes.png">';
 						else
-							echo '<img alt="likes" onclick="like.call(this)" title="Like This Image" src="https://img.icons8.com/emoji/48/000000/slightly-smiling-face.png"/>';
+							echo '<input type="image" alt="Like" name="likeBtn" title="Like This Image" src="https://img.icons8.com/emoji/48/000000/slightly-smiling-face.png">';
 						?>
+						</form>
 						<span><?php echo $total_likes; ?></span>
 					</div>
-					<div class="open-comments">
-						<img alt="Comment" title="Read or Write Comments" src="https://img.icons8.com/emoji/48/000000/speech-balloon.png"/>
-					</div>
+					<?php
+						if ($data["user_id"] === $_SESSION["user_id"])
+						{
+							echo '<div class="delete-img">';
+							echo '<form method="POST" onsubmit="return confirm(\'Are You Sure You Want To Remove This Image?\');">';
+							echo '<input type="image" alt="Delete" name="delete" title="Delete This Image" src="https://img.icons8.com/fluent/48/000000/delete-forever.png">';
+							echo '</form></div>';
+						}
+					?>
 				</div>
 				<div class="comments">
 					<div class="posted-comments">
