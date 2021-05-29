@@ -8,15 +8,49 @@ class Pages extends Controller
 
 	public function index()
 	{
-		$data = $this->pageModel->gallery();
-		$comments = $this->pageModel->getComments();
-		$likes = $this->pageModel->getLikes();
-		$data[0]->total_images = $this->pageModel->getImageCount();
-		$data[0]->page = isset($_GET["page"]) && is_numeric($_GET["page"]) ? $_GET["page"] : 1;
-		$data[0]->max_results_on_page = 5;
+		$data = [];
+		$total_images = $this->pageModel->getImageCount();
+		$rpp = 5;
+		$page = 1;
+		$final_page = ceil(($total_images / $rpp));
 
+		if (isset($_GET["page"]) && is_numeric($_GET["page"]) && $total_images > 0)
+		{
+			$page = htmlentities($_GET["page"]);
 
-		$this->view("index", $data, $comments, $likes);
+			if ($page > 1 && $page <= $final_page)
+			{
+				$data = $this->pageModel->gallery(($rpp * ($page - 1)), 5);
+				$data[0]->total_images = $total_images;
+				$data[0]->page = $page;
+				$data[0]->rpp = 5;
+				$data[0]->final_page = $final_page;
+
+				$this->view("index", $data);
+			}
+			else
+			{
+				$data = $this->pageModel->gallery();
+				$data[0]->total_images = $total_images;
+				$data[0]->page = $page;
+				$data[0]->rpp = 5;
+				$data[0]->final_page = $final_page;
+
+				$this->view("index", $data);
+			}
+		}
+		else if ($total_images > 0)
+		{
+			$data = $this->pageModel->gallery();
+			$data[0]->total_images = $total_images;
+			$data[0]->page = $page;
+			$data[0]->rpp = 5;
+			$data[0]->final_page = $final_page;
+
+			$this->view("index", $data);
+		}
+		else
+			$this->view("index");
 	}
 }
 

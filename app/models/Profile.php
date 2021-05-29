@@ -11,15 +11,18 @@ class Profile
 
 	public function getProfileData($id)
 	{
-		$this->db->query("SELECT a.*, b.username, c.*
-		FROM profiles a JOIN users b JOIN images c
-		ON a.user_id=b.id WHERE a.user_id = :user_id");
+		$this->db->query(
+		"SELECT a.*, b.username, c.*
+		FROM profiles as a
+		JOIN users as b
+		ON a.user_id = b.id
+		LEFT JOIN images as c
+		ON a.user_id = c.user_id OR (c.user_id IS NULL)
+		WHERE a.user_id = :user_id");
 
 		$this->db->bind(":user_id", $id);
 
-		$data = $this->db->resultSet();
-		if ($data)
-			return $data;
+		return $this->db->resultSet();
 	}
 
 	public function newUpload($data)
@@ -98,10 +101,14 @@ class Profile
 
 	public function deleteImage($imgId)
 	{
+		$this->db->query("SELECT file_name FROM images WHERE image_id = :imgId");
+		$this->db->bind(":imgId", $imgId);
+		$name = $this->db->single();
+
 		$this->db->query("DELETE FROM images WHERE image_id = :imgId");
 		$this->db->bind(":imgId", $imgId);
 		if ($this->db->execute())
-			return true;
+			return $name;
 		else
 			return false;
 	}

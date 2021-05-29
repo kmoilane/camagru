@@ -18,7 +18,7 @@ class Profiles extends Controller
 		$this->view("profiles/profile", $data);
 	}
 
-	public function new()
+	public function new_upload()
 	{
 		$data = [
 			"fileName" => "",
@@ -30,6 +30,7 @@ class Profiles extends Controller
 			"stickerPath" => "",
 			"fileError" => "",
 			"titleError" => "",
+			"stickerError" => "",
 			"uploadError" => ""
 		];
 
@@ -42,7 +43,7 @@ class Profiles extends Controller
 		{
 			$_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-			$temp_path =  "localhost/camagru/public/img/gallery/" . $_FILES["image"]["name"];
+			$temp_path = "localhost/camagru/public/img/gallery/" . $_FILES["image"]["name"];
 
 			$data = [
 				"fileName" => trim($_FILES["image"]["name"]),
@@ -51,16 +52,15 @@ class Profiles extends Controller
 				"fileExtension" => pathinfo($temp_path, PATHINFO_EXTENSION),
 				"finalPath" => "",
 				"dateTime" => "",
-				"stickerPath" => trim($_POST["sticker"]),
+				"stickerPath" => "none",
 				"fileError" => "",
 				"titleError" => "",
-				"descriptionError" => "",
+				"stickerError" => "",
 				"uploadError" => ""
 			];
 
-			// Valid file extensions for images
+			// Validate and assign potential error messages
 			$valid_extensions = array("jpg", "png", "jpeg", "gif", "bmp");
-
 			if (empty($data["fileName"]))
 				$data["fileError"] = "Please select a file";
 			else if (!file_exists($data["tempName"]))
@@ -73,30 +73,53 @@ class Profiles extends Controller
 			if (empty($data["title"]))
 				$data["titleError"] = "Please provide title";
 
-			if (empty($data["fileError"]) && empty($data["titleError"]))
+			if (isset($_POST["sticker"]))
+				$data["stickerPath"] = trim($_POST["sticker"]);
+
+			// If there's no errors, create new image that will be copied to server
+			if (empty($data["fileError"]) && empty($data["titleError"]) && empty($data["stickerError"]))
 			{
 				if ($data["fileExtension"][0] == "j")
 					$image = imagecreatefromjpeg($data["tempName"]);
 				else if ($data["fileExtension"] == "png")
+				{
 					$image = imagecreatefrompng($data["tempName"]);
-				else if ($data["fileExtension"] == "gif")
-					$image = imagecreatefromgif($data["tempName"]);
+					imagealphablending($image, false);
+					imagesavealpha($image, true);
+				}
 				else if ($data["fileExtension"] == "bmp")
 					$image = imagecreatefrombmp($data["tempName"]);
-				if ($data["stickerPath"] != "none")
+
+
+				if ($data["stickerPath"] !== "none" && $data["fileExtension"] !== "gif")
 				{
 					$insert = imagecreatefrompng($data["stickerPath"]);
 					$sx = imagesx($insert);
 					$sy = imagesy($insert);
-					imagecopymerge($image, $insert, (imagesx($image)/2)-(imagesx($insert)/2), (imagesy($image)/2)-(imagesy($insert)/2), 0, 0, $sx, $sy, 90);
+					imagecopymerge($image, $insert, (imagesx($image)/2) - ($sx/2), (imagesy($image) - $sy), 0, 0, $sx, $sy, 90);
 				}
+
+
 				$data["fileName"] = md5(generate_otp()) . $data["dateTime"] . "." . $data["fileExtension"];
 				$data["finalPath"] = "C:/wamp64/www/camagru/public/img/gallery/" . $data["fileName"];
-				if (imagejpeg($image, $data["finalPath"]))
+
+				if ($data["fileExtension"][0] == "j")
+					$finalResult = imagejpeg($image, $data["finalPath"]);
+				else if ($data["fileExtension"] == "png")
+					$finalResult = imagepng($image, $data["finalPath"]);
+				else if ($data["fileExtension"] == "gif")
+					$finalResult = move_uploaded_file($data["tempName"], $data["finalPath"]);
+				else if ($data["fileExtension"] == "bmp")
+					$finalResult = imagebmp($image, $data["finalPath"]);
+
+				if ($finalResult)
 				{
-					imagedestroy($image);
-					if ($insert)
-						imagedestroy($insert);
+					if ($image)
+					{
+						imagedestroy($image);
+						if ($data["stickerPath"] !== "none")
+							imagedestroy($insert);
+					}
 					$data["dateTime"] = date("YmdHis");
 					if ($this->profileModel->newUpload($data))
 					{
@@ -105,11 +128,11 @@ class Profiles extends Controller
 					else
 						$data["uploadError"] ="Better luck next time";
 				}
-				else
-					$data["uploadError"] ="Failed to upload image loser";
+			else
+				$data["uploadError"] ="Failed to upload image loser";
 			}
 		}
-		$this->view("profiles/new", $data);
+		$this->view("profiles/new_upload", $data);
 	}
 
 	public function post()
@@ -169,11 +192,17 @@ class Profiles extends Controller
 
 				if (isset($_POST["delete_x"]))
 				{
-					if ($this->profileModel->deleteImage($_GET["id"]))
+					$name = $this->profileModel->deleteImage($_GET["id"]);
+					if ($name)
 					{
-						$_SESSION["message"] = "Image removed successfully!";
-						header("location: " . URLROOT . "/profiles/profile?id=".$_SESSION["user_id"]);
-						return;
+						$imgPath = "C:\\wamp64\\www\\camagru\\public\\img\\gallery\\".$name->file_name;
+						$deleted = unlink($imgPath);
+						if ($deleted)
+						{
+							$_SESSION["message"] = "Image removed successfully!";
+							header("location: " . URLROOT . "/");
+							return;
+						}
 					}
 				}
 
@@ -184,6 +213,23 @@ class Profiles extends Controller
 		}
 
 		$this->view("profiles/post", $data);
+	}
+
+	public function new()
+	{
+		$data = [];
+		$this->view("profiles/new", $data);
+	}
+
+	public function new_capture()
+	{
+		$data = [
+			"stickerError" => "",
+			"fileError" => "",
+			"titleError" => "",
+			"uploadError" => ""
+		];
+		$this->view("profiles/new_capture", $data);
 	}
 }
 ?>

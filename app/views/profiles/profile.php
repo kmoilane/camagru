@@ -15,10 +15,10 @@
 		<div class="profile-cover glow">
 			<img src="<?php echo IMGROOT . "/cover/" . $data[0]->cover_pic ?>" alt="Cover picture">
 		</div>
-		<div class="profile-item">
-			<div class="profile-picture">
+		<div class="profile-picture">
 				<img src="<?php echo IMGROOT . "/profile/" . $data[0]->profile_pic;?>" alt="profile picture" width="250" height="250">
 			</div>
+		<div class="profile-item">
 			<div class="profile-username"><?php echo $data[0]->username; ?></div>
 			<div class="profile-description">
 				<p><?php echo $data[0]->description; ?></p>

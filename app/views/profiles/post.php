@@ -25,7 +25,7 @@
 						</div>
 					</div>
 
-					<img class="full-img" src="<?php echo IMGROOT . "/gallery/" . $data["file_name"]?>" alt="anonymous profile picture">
+					<img src="<?php echo IMGROOT . "/gallery/" . $data["file_name"]?>" alt="anonymous profile picture">
 				<div class="image-interactions">
 					<div class="likes">
 						<form method="POST">

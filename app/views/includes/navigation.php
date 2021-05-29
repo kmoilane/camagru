@@ -3,7 +3,12 @@
 	<nav class="top-nav">
 		<?php
 		if (isset($_SESSION["user_id"]))
-			{ echo
+		{
+			echo
+			'<div class="hamburger">
+				<div class="bar"></div>
+			</div>';
+			echo
 			'<div class="user-nav">
 				<ul>
 					<li>
@@ -14,19 +19,12 @@
 						<a class="cta" href="'?>
 						<?php echo URLROOT; echo '/profiles/new">New Photo</a>
 					</li>
-					<li>
-						<form action="search" method="post" name="searchForm">
-							<input type="text" name="searchfield" placeholder="Search For a User">
-							<input type="submit" name="search" value="">
-						</form>
-					</li>
 				</ul>
 			</div>';
 			} ?>
 		<a href="<?php echo URLROOT; ?>/index">
 			<div class="brandLogo">
 				<h1>Camagru</h1>
-				<div class="border"></div>
 			</div>
 		</a>
 		<ul>
@@ -51,3 +49,5 @@
 		</ul>
 	</nav>
 </div>
+
+<script type="text/javascript" src="<?php echo URLROOT; ?>/public/javascript/navbar.js"></script>
