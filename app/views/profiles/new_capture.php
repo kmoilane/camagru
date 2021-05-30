@@ -8,12 +8,13 @@
 <div class="section-new">
 	<div class="wrapper-upload">
 		<div class="preview">
-			<video autoplay></video>
-			<button onclick="startWebCam()">Start</button>
-			<button onclick="stopWebCam()">Stop</button>
+			<video id="video" playsinline autoplay></video>
+			<canvas id="canvas"></canvas>
 		</div>
+		<button id="capture" class="camagru-btn" onclick="captureSnapshot()">Capture</button>
+		<button id="retake" class="camagru-btn hidden" onclick="clearCanvas()">Retake</button>
 		<div class="wrapper-form" style="margin:0 auto;">
-			<form action="<?php echo URLROOT; ?>/profiles/new_capture" method="POST" enctype="multipart/form-data" name="new">
+			<form id="uploadForm" action="<?php echo URLROOT; ?>/profiles/new_capture" method="POST" enctype="multipart/form-data" name="new">
 				<span class="error-feedback">
 					<?php echo $data["stickerError"]; ?>
 				</span>
@@ -31,11 +32,6 @@
 						<img src="<?php echo IMGROOT;?>/stickers/camagru_sticker_white.png" alt="Camagru Sticker White">
 					</label>
 				</div>
-
-				<span class="error-feedback">
-					<?php echo $data["fileError"]; ?>
-				</span>
-				<input type="file" name="image" accept="image/*" onchange="preview_image(event)">
 				<span class="error-feedback">
 					<?php echo $data["titleError"]; ?>
 				</span>
@@ -43,27 +39,71 @@
 				<span class="error-feedback">
 					<?php echo $data["uploadError"]; ?>
 				</span>
-				<button id="submit" name="submit" type="submit" value="submit">Upload</button>
+				<input type="text" style="display:none;" name="image_data" id="hiddenImgData">
+				<button id="submit" name="submit" type="submit" onclick="uploadImage()" value="submit">Upload</button>
 			</form>
 		</div>
 	</div>
 </div>
 <script>
-	const video = document.querySelector('video');
 
-	const startWebCam = () => {
-		if (navigator.mediaDevices.getUserMedia) {
-			navigator.mediaDevices.getUserMedia ({ video: true })
-			.then(stream => video.srcObject = stream)
-			.catch(error => console.log(error));
+	'use strict';
+	const video = document.querySelector('video');
+	const capture = document.getElementById("capture");
+	const retake = document.getElementById("retake");
+	const canvas = document.getElementById("canvas");
+	const context = canvas.getContext("2d");
+	var webcamStream;
+
+	const constraints =  {
+		audio: true,
+		video: {
+			width: 640, height: 480
+		}
+	};
+
+	async function startWebCam() {
+		try { 
+			const stream = await navigator.mediaDevices.getUserMedia ({ video: true });
+			window.stream = stream;
+			video.srcObject = stream;
+			video.src = window.URL.createObjectURL(localMediaStream);
+			webcamStream = localMediaStream;
+		}
+		catch (error) {
+			console.log(error);
 		}
 	}
 	startWebCam();
 
-	const stopWebCam = () => {
-		let stream = video.srcObject;
-		let tracks = stream.getTracks();
-		tracks.foreach(track => track.stop());
-		video.srcObject = null;
+	capture.addEventListener("click", function() {
+		context.drawImage(video, 0, 0, canvas.width, canvas.height);
+		retake.classList.toggle("hidden");
+		capture.classList.toggle("hidden");
+		stopWebcam();
+	});
+
+
+	function clearCanvas() {
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		retake.classList.toggle("hidden");
+		capture.classList.toggle("hidden");
+		startWebCam();
+
 	}
+
+	function stopWebcam() {
+		const mediaStream = video.srcObject;
+		const tracks = mediaStream.getTracks();
+		tracks.forEach(function(track) {
+			track.stop();
+		});
+	}
+
+	function uploadImage() {
+		document.getElementById("hiddenImgData").value = canvas.toDataURL('image/png');
+		document.forms['uploadForm'].submit();
+	}
+
+
 </script>

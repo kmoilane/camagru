@@ -51,7 +51,7 @@ class Profiles extends Controller
 				"title" => trim($_POST["title"]),
 				"fileExtension" => pathinfo($temp_path, PATHINFO_EXTENSION),
 				"finalPath" => "",
-				"dateTime" => "",
+				"dateTime" => date("YmdHis"),
 				"stickerPath" => "none",
 				"fileError" => "",
 				"titleError" => "",
@@ -120,7 +120,6 @@ class Profiles extends Controller
 						if ($data["stickerPath"] !== "none")
 							imagedestroy($insert);
 					}
-					$data["dateTime"] = date("YmdHis");
 					if ($this->profileModel->newUpload($data))
 					{
 						header("location:" . URLROOT . "/index");
@@ -134,6 +133,111 @@ class Profiles extends Controller
 		}
 		$this->view("profiles/new_upload", $data);
 	}
+
+
+	public function new_capture()
+	{
+		$data = [
+			"stickerError" => "",
+			"fileError" => "",
+			"titleError" => "",
+			"uploadError" => ""
+		];
+
+		if (empty($_SESSION["user_id"]))
+		{
+			header("location: " . URLROOT . "/users/login");
+			exit();
+		}
+		
+		if (isset($_POST["submit"]))
+		{
+			$_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+			$data = [
+				"img" => $_POST["image_data"],
+				"fileName" => "",
+				"fileData" => "",
+				"title" => trim($_POST["title"]),
+				"fileExtension" => "png",
+				"finalPath" => "",
+				"dateTime" => date("YmdHis"),
+				"stickerPath" => "none",
+				"titleError" => "",
+				"stickerError" => "",
+				"uploadError" => ""
+			];
+
+			if (empty($data["title"]))
+				$data["titleError"] = "Please provide title";
+
+			if (isset($_POST["sticker"]))
+				$data["stickerPath"] = trim($_POST["sticker"]);
+
+			$data["img"] = str_replace('data:image/png;base64,', '', $data["img"]);
+			$data["img"] = str_replace(' ', '+', $data["img"]);
+			$data["fileData"] = base64_decode($data["img"]);
+
+			if (empty($data["titleError"]) && empty($data["stickerError"]))
+			{
+
+				$data["fileName"] = md5(generate_otp()) . $data["dateTime"] . "." . $data["fileExtension"];
+				$data["finalPath"] = "C:/wamp64/www/camagru/public/img/gallery/" . $data["fileName"];
+
+				if (file_put_contents($data["finalPath"], $data["fileData"]))
+				{
+					$max_dim = 640;
+					list($width, $height, $type, $attr) = getimagesize($data["fileData"]);
+					if ($width > $max_dim || $height > $max_dim)
+					{
+						$targetImg = $data["imageData"];
+						$ratio = $width / $height;
+						if ($ratio > 1)
+						{
+							$new_width = $max_dim;
+							$new_height = $max_dim / $ratio;
+						}
+						else
+						{
+							$new_width = $max_dim * $ratio;
+							$new_height = $max_dim;
+						}
+						$src = imagecreatefrompng($data["finalPath"]);
+						$image = imagecreatetruecolor($new_width, $new_height);
+						imagecopyresampled($image, $src, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
+						imagedestroy($src);
+					}
+					else
+					{
+						$image = imagecreatefrompng($data["finalPath"]);
+					}
+
+					if ($data["stickerPath"] !== "none" && $data["fileExtension"] !== "gif")
+					{
+						$insert = imagecreatefrompng($data["stickerPath"]);
+						$sx = imagesx($insert);
+						$sy = imagesy($insert);
+						imagecopymerge($image, $insert, (imagesx($image)/2) - ($sx/2), (imagesy($image) - $sy), 0, 0, $sx, $sy, 100);
+					}
+
+					if (imagepng($image, $data["finalPath"]))
+					{
+						imagedestroy($image);
+						if ($data["stickerPath"] !== "none")
+							imagedestroy($insert);
+						if ($this->profileModel->newUpload($data))
+						{
+							header("location:" . URLROOT . "/index");
+						}
+						else
+							$data["uploadError"] ="Better luck next time";
+					}
+				}
+			}
+		}
+		$this->view("profiles/new_capture", $data);
+	}
+
 
 	public function post()
 	{
@@ -221,15 +325,5 @@ class Profiles extends Controller
 		$this->view("profiles/new", $data);
 	}
 
-	public function new_capture()
-	{
-		$data = [
-			"stickerError" => "",
-			"fileError" => "",
-			"titleError" => "",
-			"uploadError" => ""
-		];
-		$this->view("profiles/new_capture", $data);
-	}
 }
 ?>
