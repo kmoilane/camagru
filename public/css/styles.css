@@ -1019,7 +1019,7 @@ a.current-page:hover {
 	padding: 0px;
 	max-width: 640px;
 	width: 90%;
-	max-height: 480px;
+	max-height: auto;
 }
 
 .preview video {

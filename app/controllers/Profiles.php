@@ -186,31 +186,21 @@ class Profiles extends Controller
 
 				if (file_put_contents($data["finalPath"], $data["fileData"]))
 				{
-					$max_dim = 640;
-					list($width, $height, $type, $attr) = getimagesize($data["fileData"]);
-					if ($width > $max_dim || $height > $max_dim)
+					$src = imagecreatefromstring(file_get_contents($data["finalPath"]));
+					$width = imagesx($src);
+					$height = imagesy($src);
+					$ratio = $width / $height;
+					if (4 / 3 > $ratio)
 					{
-						$targetImg = $data["imageData"];
-						$ratio = $width / $height;
-						if ($ratio > 1)
-						{
-							$new_width = $max_dim;
-							$new_height = $max_dim / $ratio;
-						}
-						else
-						{
-							$new_width = $max_dim * $ratio;
-							$new_height = $max_dim;
-						}
-						$src = imagecreatefrompng($data["finalPath"]);
-						$image = imagecreatetruecolor($new_width, $new_height);
-						imagecopyresampled($image, $src, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-						imagedestroy($src);
+						$width = $height * $ratio;
 					}
 					else
 					{
-						$image = imagecreatefrompng($data["finalPath"]);
+						$height = $width / $ratio;
 					}
+					$image = imagecreatetruecolor(640, 480);
+					imagecopyresampled($image, $src, 0, 0, 0, 0, 640, 480, $width, $height);
+					imagedestroy($src);
 
 					if ($data["stickerPath"] !== "none" && $data["fileExtension"] !== "gif")
 					{
